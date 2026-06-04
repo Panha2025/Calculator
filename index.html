@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body class="min-h-screen overflow-hidden bg-[#111113] text-white antialiased">
+    <canvas id="backgroundCanvas" class="fixed inset-0 h-full w-full"></canvas>
+    <div class="background-shade"></div>
+
+    <main class="relative z-10 flex min-h-screen items-center justify-center overflow-auto px-4 py-6 sm:px-6 lg:px-8">
+      <section class="stage-enter flex w-full max-w-[960px] translate-y-[1.3vh] items-center justify-center lg:max-w-[920px]">
+        <div class="w-full max-w-[860px] rounded-[2rem] border border-white/10 bg-[#0c0c0d]/80 p-4 shadow-[0_30px_90px_rgba(0,0,0,0.52)] backdrop-blur-[18px] transition hover:-translate-y-0.5 hover:border-orange-400/20 hover:shadow-[0_34px_100px_rgba(0,0,0,0.58)] sm:p-5 lg:max-w-[860px]">
+          <div class="mb-4 flex justify-end">
+            <button class="rounded-full bg-[#ff9f0a] px-4 py-3 font-bold text-white transition hover:bg-[#ffb13b]" data-action="history">History</button>
+          </div>
+
+          <div class="w-full rounded-[1.65rem] bg-black p-4 sm:p-6">
+            <div class="flex min-h-[5.8rem] flex-col justify-end px-1 pb-4 max-[520px]:min-h-[5.7rem] max-[760px]:min-h-[5.2rem] max-[760px]:pb-2">
+              <div id="operationLabel" class="min-h-6 text-right text-[0.95rem] text-zinc-400">&nbsp;</div>
+              <div id="display" class="origin-right overflow-hidden break-all text-right text-[clamp(3.2rem,8vw,5.4rem)] font-light leading-none text-white max-[760px]:text-[clamp(2.6rem,9vh,4rem)]">0</div>
+            </div>
+
+            <div class="grid grid-cols-4 gap-3 sm:gap-4 lg:gap-[1.1rem]">
+              <button class="calc-btn min-h-[clamp(3.7rem,7vw,5rem)] rounded-full bg-[#a5a5a5] text-[clamp(1.05rem,4vw,1.55rem)] font-bold text-black md:min-h-[4.7rem] md:rounded-[2rem] lg:min-h-[4.15rem]" data-action="clear">AC</button>
+              <button class="calc-btn min-h-[clamp(3.7rem,7vw,5rem)] rounded-full bg-[#a5a5a5] text-[clamp(1.05rem,4vw,1.55rem)] font-bold text-black md:min-h-[4.7rem] md:rounded-[2rem] lg:min-h-[4.15rem]" data-operation="percentage">%</button>
+              <button class="calc-btn min-h-[clamp(3.7rem,7vw,5rem)] rounded-full bg-[#a5a5a5] text-[clamp(1.05rem,4vw,1.55rem)] font-bold text-black md:min-h-[4.7rem] md:rounded-[2rem] lg:min-h-[4.15rem]" data-action="sign">+/-</button>
+              <button class="calc-btn min-h-[clamp(3.7rem,7vw,5rem)] rounded-full bg-[#ff9f0a] text-[clamp(1.5rem,5vw,2.6rem)] text-white md:min-h-[4.7rem] md:rounded-[2rem] lg:min-h-[4.15rem]" data-operation="divide">&divide;</button>
+
+              <button class="calc-btn number-btn" data-number="7">7</button>
+              <button class="calc-btn number-btn" data-number="8">8</button>
+              <button class="calc-btn number-btn" data-number="9">9</button>
+              <button class="calc-btn op-btn" data-operation="multiply">&times;</button>
+
+              <button class="calc-btn number-btn" data-number="4">4</button>
+              <button class="calc-btn number-btn" data-number="5">5</button>
+              <button class="calc-btn number-btn" data-number="6">6</button>
+              <button class="calc-btn op-btn" data-operation="subtract">&minus;</button>
+
+              <button class="calc-btn number-btn" data-number="1">1</button>
+              <button class="calc-btn number-btn" data-number="2">2</button>
+              <button class="calc-btn number-btn" data-number="3">3</button>
+              <button class="calc-btn op-btn" data-operation="add">+</button>
+
+              <button class="calc-btn number-btn" data-number="0">0</button>
+              <button class="calc-btn number-btn" data-action="openParen">(</button>
+              <button class="calc-btn number-btn" data-action="closeParen">)</button>
+              <button class="calc-btn op-btn" data-action="equals">=</button>
+
+              <button class="calc-btn number-btn" data-action="decimal">.</button>
+              <button class="calc-btn tool-btn" data-operation="sqrt">&radic;x</button>
+              <button class="calc-btn tool-btn" data-operation="square">x<sup>2</sup></button>
+              <button class="calc-btn tool-btn" data-action="delete">DEL</button>
+            </div>
+          </div>
+        </div>
+
+        <aside id="historyPanel" class="history-panel fixed left-1/2 top-1/2 z-30 hidden max-h-[min(78vh,620px)] w-[min(92vw,560px)] -translate-x-1/2 -translate-y-1/2 rounded-[2rem] border border-white/10 bg-black/60 p-4 shadow-[0_24px_80px_rgba(0,0,0,0.38)] backdrop-blur-[18px] sm:p-5" aria-hidden="true">
+          <div class="mb-4 flex items-center justify-between gap-4">
+            <div>
+              <p class="text-xs font-extrabold uppercase tracking-[0.16em] text-[#ffb13b]">Live Log</p>
+              <h2 class="text-2xl font-bold leading-tight text-white">History</h2>
+            </div>
+            <div class="flex gap-2">
+              <button id="clearHistory" class="rounded-full bg-[#ff9f0a] px-4 py-3 font-bold text-white transition hover:bg-[#ffb13b]">Clear</button>
+              <button class="rounded-full bg-[#ff9f0a] px-4 py-3 font-bold text-white transition hover:bg-[#ffb13b]" data-action="closeHistory">Close</button>
+            </div>
+          </div>
+          <div id="history" class="flex min-h-64 max-h-[58vh] flex-col gap-2 overflow-auto pr-1 text-[0.95rem] text-zinc-300"></div>
+        </aside>
+      </section>
+    </main>
+
+    <div id="toast" class="toast pointer-events-none fixed bottom-5 left-1/2 z-20 rounded-full bg-red-500 px-5 py-3 text-sm font-bold text-white opacity-0 shadow-[0_18px_45px_rgba(0,0,0,0.4)] transition"></div>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
